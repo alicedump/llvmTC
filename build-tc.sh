@@ -55,7 +55,8 @@ if [[ ! -z "${2}" ]];then
 fi
 ./build-llvm.py \
 	--clang-vendor "$LLVM_NAME" \
-	--targets "ARM;AArch64" \
+	--projects "clang;lld;polly" \
+	--targets "ARM;AArch64;X86" \
 	--defines "LLVM_PARALLEL_COMPILE_JOBS=$TomTal LLVM_PARALLEL_LINK_JOBS=$TomTal CMAKE_C_FLAGS='-g0 -O3' CMAKE_CXX_FLAGS='-g0 -O3'" \
 	--shallow-clone \
 	--no-ccache \
@@ -71,7 +72,7 @@ fi
 # Build binutils
 msg "$LLVM_NAME: Building binutils..."
 tg_post_msg "<b>$LLVM_NAME: Building Binutils. . .</b>"
-./build-binutils.py --targets arm aarch64
+./build-binutils.py --targets arm aarch64 x86
 
 # Remove unused products
 rm -fr install/include
@@ -112,6 +113,9 @@ pushd rel_repo || exit
 rm -fr ./*
 cp -r ../install/* .
 git checkout README.md # keep this as it's not part of the toolchain itself
+sudo apt-get install git-lfs -y
+git lfs install
+git lfs track "*"
 git add .
 git commit -asm "$LLVM_NAME: Bump to $rel_date build
 
@@ -119,6 +123,6 @@ LLVM commit: $llvm_commit_url
 Clang Version: $clang_version
 Binutils version: $binutils_ver
 Builder commit: https://$GH_PUSH_REPO_URL/commit/$builder_commit"
-git push -f
+git lfs migrate info --everything --include="git"
 popd || exit
 tg_post_msg "<b>$LLVM_NAME: Toolchain pushed to <code>https://$GH_PUSH_REPO_URL</code></b>"
