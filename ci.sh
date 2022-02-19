@@ -40,6 +40,7 @@ function do_deps() {
         gcc \
         g++ \
         git \
+        git-lfs \
         libelf-dev \
         libssl-dev \
         lld \
